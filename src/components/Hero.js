@@ -111,7 +111,7 @@ const Hero = () => {
     setInputAmount(e.target.value);    
     if(e.target.value){
       let tokens = await contract.calculateToken(stage, CryptoAddress, ethers.utils.parseEther(e.target.value));
-      setTokenAmount(parseFloat(Number(tokens) / Math.pow(10, 18)).toFixed(2));
+      setTokenAmount(ethers.utils.formatEther(tokens));
     }
     
   };
@@ -412,7 +412,7 @@ const Hero = () => {
                           name="token"
                           id="token"
                           value={tokenAmount}
-                          readonly=""
+                          readOnly=""
                           placeholder=""
                           className="block w-full rounded-md border-0 py-2.5 sm:py-1.5 pl-4 pr-10 text-white  bg-gradient-to-r from-gray-900 to-gray-800  shadow-sm ring-1 ring-inset ring-blue-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-800 sm:text-base font-medium sm:leading-10 outline-none"
                         />
