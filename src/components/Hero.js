@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import blockaudit from "../images/blockaudit.jpg";
 import logo from "../images/logo-sm.png";
-import Web3, { Contract } from "web3";
 import contract,{USDT,USDC,Null,BNB} from "../config"
 import {useBalance,useAccount}from "wagmi"
 import {ethers} from "ethers"
