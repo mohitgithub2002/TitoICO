@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import contract from "../config";
+import {contract} from "../config";
 import {ethers} from "ethers";
 import { useAccount } from "wagmi";
 import {USDC,USDT,Null,BNB} from "../config"

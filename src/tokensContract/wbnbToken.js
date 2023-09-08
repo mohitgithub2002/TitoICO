@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+const ethers = require("ethers");
 
 // For WBNB
 const WBNBAddress = "0x90d694ab4ea9737b21a363e35b406e740238d239";
@@ -184,6 +184,7 @@ const WBNBABI = [
     type: "function",
   },
 ];
+
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 export const WBNBToken = new ethers.Contract(WBNBAddress, WBNBABI, provider);
 

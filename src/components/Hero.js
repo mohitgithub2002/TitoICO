@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import blockaudit from "../images/blockaudit.jpg";
 import logo from "../images/logo-sm.png";
-import contract,{USDT,USDC,Null,BNB} from "../config"
+import {contract,USDT,USDC,Null,BNB} from "../config"
 import {useBalance,useAccount}from "wagmi"
 import {ethers} from "ethers"
-import {WBNBToken,USDTToken,USDCToken} from "../tokensContract/wbnbToken"
+import {WBNBToken,USDTToken,USDCToken} from "../config"
 
 const Hero = () => {
   const address = useAccount();

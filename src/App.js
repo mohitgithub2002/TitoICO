@@ -12,6 +12,7 @@ import {
 import { Web3Modal } from "@web3modal/react";
 import { configureChains, createConfig, WagmiConfig } from "wagmi";
 import { bsc, mainnet, sepolia, polygonMumbai } from "wagmi/chains";
+import connectContract from "./config";
 
 const chains = [mainnet, sepolia, bsc, polygonMumbai];
 const projectId = "6b098530af4797b4b0dcb37e0534845a";
@@ -25,6 +26,7 @@ const wagmiConfig = createConfig({
 const ethereumClient = new EthereumClient(wagmiConfig, chains);
 
 const App = () => {
+  connectContract();
   return (
     <>
       <WagmiConfig config={wagmiConfig}>
