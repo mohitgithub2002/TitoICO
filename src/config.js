@@ -2,7 +2,7 @@
 // import {ethers} from "ethers";
 const ethers = require("ethers");
 export const Null = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-export const USDT = "0xaB0011b2Ac2B095c6EeC8e82eE7E55CE7A1e1a22";S
+export const USDT = "0xaB0011b2Ac2B095c6EeC8e82eE7E55CE7A1e1a22";
 export const USDC = "0xa0106242975e8281EBb2dcdab5F3705d424c74a8";
 export const BNB =  "0x90D694ab4eA9737b21a363E35b406e740238D239";
 const TitoICO = "0xB1523130e166023F3126A62C7E3b49cFbe6aad46";
