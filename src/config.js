@@ -1,12 +1,11 @@
-
 // import {ethers} from "ethers";
 const ethers = require("ethers");
-export const Null = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+export const Null = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 export const USDT = "0xaB0011b2Ac2B095c6EeC8e82eE7E55CE7A1e1a22";
 export const USDC = "0xa0106242975e8281EBb2dcdab5F3705d424c74a8";
-export const BNB =  "0x90D694ab4eA9737b21a363E35b406e740238D239";
+export const BNB = "0x90D694ab4eA9737b21a363E35b406e740238D239";
 const TitoICO = "0xB1523130e166023F3126A62C7E3b49cFbe6aad46";
-const Tito = "0x44154Ebe10Ca3ECc2bE9e62DDc6d4C457A033C16";
+const Tito = "0x4299f742c2bb2c860669698C365a719514723148";
 const TokenABI = [
   { inputs: [], stateMutability: "nonpayable", type: "constructor" },
   {
@@ -357,6 +356,7 @@ const TitoIcoAbi = [
     type: "function",
   },
 ];
+
 //wbnb
 const WBNBABI = [
   { inputs: [], stateMutability: "nonpayable", type: "constructor" },
@@ -913,19 +913,18 @@ export let contract;
 export let WBNBToken;
 export let USDCToken;
 export let USDTToken;
-const connectContract= async ()=>{
-  try{
+const connectContract = async () => {
+  try {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     console.log("provider : ", provider);
-    const signer =  provider.getSigner()
-    contract = new ethers.Contract(Tito,TitoIcoAbi,signer)
-    WBNBToken = new ethers.Contract(BNB,WBNBABI,signer)
-    USDCToken = new ethers.Contract(USDC,USDCABI,signer)
-    USDTToken = new ethers.Contract(USDT,USDTABI,signer)
-  }catch(err){
+    const signer = provider.getSigner();
+    contract = new ethers.Contract(Tito, TitoIcoAbi, signer);
+    WBNBToken = new ethers.Contract(BNB, WBNBABI, signer);
+    USDCToken = new ethers.Contract(USDC, USDCABI, signer);
+    USDTToken = new ethers.Contract(USDT, USDTABI, signer);
+  } catch (err) {
     console.log("err : ", err);
   }
-  
 };
 
 export default connectContract;

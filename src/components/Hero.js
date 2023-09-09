@@ -5,9 +5,11 @@ import {contract,USDT,USDC,Null,BNB} from "../config"
 import {useBalance,useAccount}from "wagmi"
 import {ethers} from "ethers"
 import {WBNBToken,USDTToken,USDCToken} from "../config"
+import calculateToken from "./calculateToken"
 
 const Hero = () => {
   const address = useAccount();
+  const {isconnected}=useAccount();
   const {data} = useBalance(address);
   const [loader, setLoader] = useState(false);
   const [txDone, setTxDone] = useState();
@@ -20,9 +22,9 @@ const Hero = () => {
   const [inputAmount, setInputAmount] = useState(0);
   const [tokenAmount, setTokenAmount] = useState(0);
   const [soldPercent, setSoldPercent] = useState(0);
-  const [userBalance, setUserBalance] = useState(parseFloat(data?.formatted).toFixed(2));
+  const [userBalance, setUserBalance] = useState();
   const [CryptoAddress, setCryptoAddress] = useState("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE");
-  const totalSupply = "10000";
+  const totalSupply = "10000000000000";
 
   //user balance
 
@@ -31,7 +33,7 @@ const Hero = () => {
       const wbnbbalance = await WBNBToken.balanceOf(address.address);
 
       const usdtbalance = await USDTToken.balanceOf(address.address);
-
+       
       const usdcbalance = await USDCToken.balanceOf(address.address);
 
       switch(crypto){
@@ -40,7 +42,7 @@ const Hero = () => {
         case "USDT": setUserBalance(parseFloat(ethers.utils.formatUnits(usdtbalance,6)).toFixed(2));break;
         case "USDC": setUserBalance(parseFloat(ethers.utils.formatUnits(usdcbalance,6)).toFixed(2));break;
       }
-
+      
     }catch(error){
       console.log(error);
     }
@@ -61,17 +63,18 @@ const Hero = () => {
       case "USDC": setCryptoAddress(USDC);break;
       case "USD": setCryptoAddress(Null);break; //have to change for card payment
     }
-    console.log(CryptoAddress)
+    
   }
   useEffect(()=>{
     setAddress();
+    console.log(CryptoAddress)
   },[crypto])
 
 
 
   //fetch data about the  token
   const getData = async ()=>{
-    if(!address) return;
+    
     try{
       //getstage
       const stageData = await contract.getCurrentStage();
@@ -81,6 +84,9 @@ const Hero = () => {
       const rateData = await contract.rate(stage+1);
       setNextStagePrice(rateData);
 
+      //get current stage price
+      const currentRateData = await contract.rate(stage);
+      setCurrentStagePrice(currentRateData);
       //get available tito
       const tokens = await contract.availableTito();
       const tito = ethers.utils.formatEther(tokens)
@@ -101,19 +107,26 @@ const Hero = () => {
   }
   useEffect(()=>{
     getData();
-  },[])
+  },[address,txDone])
 
 
   //calculate tokens
-  const calculateTokens = async (e) => {
+  const setAmountValue =  (e) => {
     // e.preventDefault();
     setInputAmount(e.target.value);    
-    if(e.target.value){
-      let tokens = await contract.calculateToken(stage, CryptoAddress, ethers.utils.parseEther(e.target.value));
-      setTokenAmount(ethers.utils.formatEther(tokens));
-    }
+    
     
   };
+  const calculateTokens2 =  () => {
+    if(inputAmount){
+      let tokens = calculateToken(Number(stage), CryptoAddress, Number(inputAmount));
+      console.log(tokens);
+      setTokenAmount(tokens);
+    }
+  }
+  useEffect(()=>{
+    calculateTokens2();
+  },[inputAmount,CryptoAddress])
   
 
   
@@ -124,7 +137,8 @@ const Hero = () => {
       let isethtype;
       if(crypto==="USDC"||crypto==="USDT") isethtype=false;
       else isethtype = true;
-      const tx = await contract.buy(ethers.utils.parseUnits(inputAmount,isethtype?18:6), CryptoAddress)
+      console.log(CryptoAddress);
+      const tx = await contract.buy(ethers.utils.parseUnits(inputAmount,isethtype?18:6), CryptoAddress, {value: (crypto==="ETH")?ethers.utils.parseEther(inputAmount):0});
       await tx.wait();
       setLoader(false);
       setTxDone(true);
@@ -243,7 +257,7 @@ const Hero = () => {
                 </div>
                 <div className="mt-4">
                   <h4 className="flex flex-row items-center gap-2 text-center text-sm font-semibold leading-[30px] text-white before:h-[2px] before:w-auto before:flex-1 before:bg-gradient-to-r before:from-fuchsia-600  before:via-blue-800  before:to-[#572bf7] before:inline-block before:align-middle after:h-[2px] after:w-auto after:bg-gradient-to-r after:from-[#572bf7]  after:via-fuchsia-600  after:to-blue-800 after:inline-block after:align-middle after:flex-1">
-                    0.0125 USD = 1 $TITO
+                    {currentStagePrice/10000} USD = 1 $TITO
                   </h4>
                 </div>
                 <div className="px-2 bg-transparent lg:px-2">
@@ -369,7 +383,7 @@ const Hero = () => {
                       <div className="relative mt-0.5 rounded-md shadow-sm">
                         <input
                           type="number"
-                          onChange={calculateTokens}
+                          onChange={setAmountValue}
                           min="0"
                           name="amount"
                           id="amount"
