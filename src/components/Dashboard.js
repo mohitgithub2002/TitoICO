@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
 import {contract} from "../config";
 import {ethers} from "ethers";
-import { useAccount } from "wagmi";
+import { useAccount, useConnect } from "wagmi";
 import {USDC,USDT,Null,BNB} from "../config"
 const Dashboard = () => {
-  const { address , isConnected} = useAccount();
+  const { address, isConnecting, isDisconnected } = useAccount()
+  const { isConnected, connector, connectors, connectAsync } = useConnect()
   const [loader, setLoader] = React.useState(false);
   const [history, setHistory] = React.useState([]);
   const [totalTx, setTotalTx] = React.useState(0);

@@ -26,8 +26,11 @@ const Hero = () => {
   const [wbnbBalance, setWBNBBalance] = useState();
   const [usdtBalance, setUSDTBalance] = useState();
   const [usdcBalance, setUSDCBalance] = useState();
+  const [isallowed, setIsAllowed] = useState(false);
+  const [approveTxDone, setApproveTxDone] = useState(false);
   const [CryptoAddress, setCryptoAddress] = useState("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE");
   const totalSupply = "10000000000000";
+  const approveAmount ="115792089237316195423570985008687907853269984665640564039457584007913129639935"
 
   //user balance
 
@@ -39,12 +42,12 @@ const Hero = () => {
       setUSDTBalance(parseFloat(ethers.utils.formatUnits(usdtbalance,6)).toFixed(2))
       const usdcbalance = await USDCToken.balanceOf(address);
       setUSDCBalance(parseFloat(ethers.utils.formatUnits(usdcbalance,6)).toFixed(2))
-      switch(crypto){
-        case "ETH": setUserBalance(parseFloat(balance?.data?.formatted).toFixed(2));break;
-        case "BNB": setUserBalance(parseFloat(ethers.utils.formatEther(wbnbbalance)).toFixed(2));break;
-        case "USDT": setUserBalance(parseFloat(ethers.utils.formatUnits(usdtbalance,6)).toFixed(2));break;
-        case "USDC": setUserBalance(parseFloat(ethers.utils.formatUnits(usdcbalance,6)).toFixed(2));break;
-      }
+      // switch(crypto){
+      //   case "ETH": setUserBalance(parseFloat(balance?.data?.formatted).toFixed(2));break;
+      //   case "BNB": setUserBalance(parseFloat(ethers.utils.formatEther(wbnbbalance)).toFixed(2));break;
+      //   case "USDT": setUserBalance(parseFloat(ethers.utils.formatUnits(usdtbalance,6)).toFixed(2));break;
+      //   case "USDC": setUserBalance(parseFloat(ethers.utils.formatUnits(usdcbalance,6)).toFixed(2));break;
+      // }
       console.log("all balance",wbnbBalance,usdtBalance,usdcBalance)
     }catch(error){
       console.log(error);
@@ -55,7 +58,15 @@ const Hero = () => {
     getBalance();
   },[txDone,address,isConnected,crypto])
   
-
+  //set balance
+  useEffect(()=>{
+    switch(crypto){
+      case "ETH": setUserBalance(parseFloat(balance?.data?.formatted).toFixed(2));break;
+      case "BNB": setUserBalance(wbnbBalance);break;
+      case "USDT": setUserBalance(usdtBalance);break;
+      case "USDC": setUserBalance(usdcBalance);break;
+    }
+  },[crypto,wbnbBalance,usdtBalance,usdcBalance])
 
   //set address
   const setAddress = ()=>{
@@ -110,7 +121,7 @@ const Hero = () => {
   }
   useEffect(()=>{
     getData();
-  },[address,txDone,isConnected])
+  },[address,txDone,isConnected,stage])
 
 
   //calculate tokens
@@ -159,7 +170,72 @@ const Hero = () => {
   },[txDone])
 
 
+  //check allowance
+  const checkAllowance = async()=>{
+    try{
+      if(crypto==="ETH") setIsAllowed(true);
+      else{
+        if(crypto==="BNB"){
+          const allowance = await WBNBToken.allowance(address, contract.address);
+          if(allowance>=ethers.utils.parseEther(inputAmount)){
+            setIsAllowed(true);
+          }
+        }
+        else if(crypto==="USDT"){
+          const allowance = await USDTToken.allowance(address, contract.address);
+          if(allowance>=ethers.utils.parseUnits(inputAmount,6)){
+            setIsAllowed(true);
+          }
+        }
+        else if(crypto==="USDC"){
+          const allowance = await USDCToken.allowance(address, contract.address);
+          if(allowance>=ethers.utils.parseUnits(inputAmount,6)){
+            setIsAllowed(true);
+          }
+        }
+      }
+      
+    }catch(error){
+      console.log(error);
+    }
+  }
 
+  useEffect(()=>{
+    setIsAllowed(false);
+    checkAllowance();
+    console.log(isallowed);
+  },[inputAmount,crypto,address,isConnected,approveTxDone])
+
+  //approve contract address for token transfer
+  const approveToken = async()=>{
+    try{
+      setLoader(true);
+      if(crypto==="BNB"){
+        const tx = await WBNBToken.approve(contract.address,approveAmount);
+        const data = await tx.wait();
+        setLoader(false);
+        setApproveTxDone(true);
+      }
+      else if(crypto==="USDT"){
+        const tx = await USDTToken.approve(contract.address,approveAmount)
+        const data = await tx.wait();
+        setLoader(false);
+        setApproveTxDone(true);
+      }
+      else if(crypto==="USDC"){
+        const tx = await USDCToken.approve(contract.address,approveAmount)
+        const data = await tx.wait();
+        setLoader(false);
+        setApproveTxDone(true);
+      }
+      else console.log("not default crypto");setLoader(false);
+    }catch(error){
+      setLoader(false);
+      alert(error.reason);
+      console.log(error);
+    }
+  }
+    
   return (
     <>
       <div className="bg-cover bg-vulcan bg-no-repeat bg-center mt-[-105px] md:mt-[-131px] px-3 pt-40 pb-12 lg:block xl:px-0 bg-gradient-to-r from-gray-900 to-gray-800">
@@ -439,8 +515,8 @@ const Hero = () => {
                   <br />
                   {/* <br /> */}
 
-                  <button onClick={buy} className="sm:mt-2 mb-2 w-full inline-flex items-center justify-center whitespace-nowrap border-0 rounded-md px-5 py-2 sm:px-5 sm:py-5 3xl:py-4 4xl:py-5 text-sm sm:text-md  font-semibold text-white leading-5 shadow-sm  bg-gradient-to-r from-sky-600 to-fuchsia-600 hover:bg-blue-900">
-                    {loader?"Processing....":"Buy $TITO"}
+                  <button onClick={isallowed?buy:approveToken} className="sm:mt-2 mb-2 w-full inline-flex items-center justify-center whitespace-nowrap border-0 rounded-md px-5 py-2 sm:px-5 sm:py-5 3xl:py-4 4xl:py-5 text-sm sm:text-md  font-semibold text-white leading-5 shadow-sm  bg-gradient-to-r from-sky-600 to-fuchsia-600 hover:bg-blue-900">
+                    {loader?"Processing....":isallowed?"Buy $TITO":"Approve Token"}
                   </button>
                   {/* <div className="text-center mb-5 mt-2">
 
