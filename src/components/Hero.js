@@ -2,19 +2,19 @@ import { useEffect, useState } from "react";
 import blockaudit from "../images/blockaudit.jpg";
 import logo from "../images/logo-sm.png";
 import {contract,USDT,USDC,Null,BNB} from "../config"
-import {useBalance,useAccount}from "wagmi"
+import {useBalance,useAccount, useConnect}from "wagmi"
 import {ethers} from "ethers"
 import {WBNBToken,USDTToken,USDCToken} from "../config"
 import calculateToken from "./calculateToken"
 
 const Hero = () => {
-  const address = useAccount();
-  const {isconnected}=useAccount();
-  const {data} = useBalance(address);
+  const { address, isConnecting, isDisconnected } = useAccount()
+  const balance = useBalance({address:address})
+  const { isConnected, connector, connectors, connectAsync } = useConnect()
   const [loader, setLoader] = useState(false);
   const [txDone, setTxDone] = useState();
   const [crypto, setCrypto] = useState("ETH");
-  const [stage, setStage] = useState("");
+  const [stage, setStage] = useState();
   const [nextStagePrice, setNextStagePrice] = useState(0);
   const [currentStagePrice, setCurrentStagePrice] = useState(0);
   const [availableTito, setAvailableTito] = useState(0);
@@ -23,6 +23,9 @@ const Hero = () => {
   const [tokenAmount, setTokenAmount] = useState(0);
   const [soldPercent, setSoldPercent] = useState(0);
   const [userBalance, setUserBalance] = useState();
+  const [wbnbBalance, setWBNBBalance] = useState();
+  const [usdtBalance, setUSDTBalance] = useState();
+  const [usdcBalance, setUSDCBalance] = useState();
   const [CryptoAddress, setCryptoAddress] = useState("0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE");
   const totalSupply = "10000000000000";
 
@@ -30,19 +33,19 @@ const Hero = () => {
 
   const getBalance = async()=>{
     try{
-      const wbnbbalance = await WBNBToken.balanceOf(address.address);
-
-      const usdtbalance = await USDTToken.balanceOf(address.address);
-       
-      const usdcbalance = await USDCToken.balanceOf(address.address);
-
+      const wbnbbalance = await WBNBToken.balanceOf(address);
+      setWBNBBalance(parseFloat(ethers.utils.formatEther(wbnbbalance)).toFixed(2))
+      const usdtbalance = await USDTToken.balanceOf(address);
+      setUSDTBalance(parseFloat(ethers.utils.formatUnits(usdtbalance,6)).toFixed(2))
+      const usdcbalance = await USDCToken.balanceOf(address);
+      setUSDCBalance(parseFloat(ethers.utils.formatUnits(usdcbalance,6)).toFixed(2))
       switch(crypto){
-        case "ETH": setUserBalance(parseFloat(data?.formatted).toFixed(2));break;
+        case "ETH": setUserBalance(parseFloat(balance?.data?.formatted).toFixed(2));break;
         case "BNB": setUserBalance(parseFloat(ethers.utils.formatEther(wbnbbalance)).toFixed(2));break;
         case "USDT": setUserBalance(parseFloat(ethers.utils.formatUnits(usdtbalance,6)).toFixed(2));break;
         case "USDC": setUserBalance(parseFloat(ethers.utils.formatUnits(usdcbalance,6)).toFixed(2));break;
       }
-      
+      console.log("all balance",wbnbBalance,usdtBalance,usdcBalance)
     }catch(error){
       console.log(error);
     }
@@ -50,7 +53,7 @@ const Hero = () => {
 
   useEffect(()=>{
     getBalance();
-  },[crypto,availableTito])
+  },[txDone,address,isConnected,crypto])
   
 
 
@@ -107,15 +110,13 @@ const Hero = () => {
   }
   useEffect(()=>{
     getData();
-  },[address,txDone])
+  },[address,txDone,isConnected])
 
 
   //calculate tokens
   const setAmountValue =  (e) => {
     // e.preventDefault();
     setInputAmount(e.target.value);    
-    
-    
   };
   const calculateTokens2 =  () => {
     if(inputAmount){
